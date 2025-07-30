@@ -1,0 +1,31 @@
+# Jaffle Shop Optimized Pipeline Configuration
+# This configuration file optimizes dlt pipeline performance for the Jaffle Shop data extraction
+
+[runtime]
+log_level = "INFO" # System log level - use "DEBUG" for detailed troubleshooting
+# Disable anonymous usage data reporting for privacy
+dlthub_telemetry = false
+
+# EXTRACTION STAGE - Data retrieval from source API
+[extract]
+workers = 1            # Single worker for single resource (orders) - prevents API rate limiting
+max_parallel_items = 4 # Maximum parallel items during extraction - balances speed vs memory
+
+# NORMALIZATION STAGE - Data transformation and schema inference
+[normalize]
+workers = 4 # Multiple processes for CPU-intensive normalization tasks
+
+# LOAD STAGE - Data insertion into destination database
+[load]
+workers = 4 # Multiple threads for concurrent database writes (DuckDB supports this)
+
+# DATA WRITER SETTINGS - Controls how data is buffered and written to files
+[data_writer]
+buffer_max_items = 10000  # Large buffer reduces I/O operations - optimal for high-volume data
+file_max_items = 50000    # File rotation threshold - enables parallel processing of chunks
+file_max_bytes = 10000000 # 10MB file size limit - prevents memory issues with large datasets
+
+# NORMALIZE STAGE DATA WRITER - Separate settings for normalization output
+[normalize.data_writer]
+buffer_max_items = 10000  # Match extract buffer size for consistent performance
+file_max_items = 50000    # Align with extract settings for optimal pipeline flow
